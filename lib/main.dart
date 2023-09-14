@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Task'),
     );
   }
 }
@@ -71,13 +71,10 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body:  ListView.builder (
+      body:  data.length==0?Center(child:  Text("No Notes found"),):ListView.builder (
           itemCount: data.length,
           itemBuilder: (BuildContext context, int position) {
                  var value =data[position];
-                 if(data.length==0){
-                   return Text("No Notes found");
-                 }
                   return Card(
                     elevation: 2,
                     child: ListTile(
