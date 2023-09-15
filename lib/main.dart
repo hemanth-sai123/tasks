@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:task/add_note.dart';
 import 'package:task/sql_llte/db_services.dart';
 
+import 'cubit/note/note_author_cubit.dart';
+import 'cubit/note/note_author_state.dart';
+
 
 void main() {
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+
+    return MultiBlocProvider(
+        providers: [
+
+          BlocProvider<NoteCubit>(
+            create: (context) => NoteCubit(),
+          ),
+
+
+        ], child:MaterialApp(
       routes: {
         "/add_note":(ctx)=>const AddNoteActivity()
       },
@@ -22,7 +37,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Task'),
+    )
+
     );
+
   }
 }
 
@@ -40,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Map<String, dynamic>> data=[];
  void getData() async{
-    data =await DBServices.query();
+
     setState(() {
 
     });
@@ -49,8 +67,51 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    DBServices.initState().then((value) =>getData() );
+   // DBServices.initState().then((value) =>getData() );
+    BlocProvider.of<NoteCubit>(context).init().then((value) =>   BlocProvider.of<NoteCubit>(context).getAllList());
 
+  }
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+  Widget _blockBuilder(){
+    return BlocBuilder<NoteCubit,NoteState>(
+        builder:(context,state) {
+
+          if (state is NoteInitialState) {
+            return Center(child: CircularProgressIndicator(),);
+          }
+
+          if (state is NotesLoadedState) {
+            return state.notes.isEmpty?const Center(child: Text("Empty list"),):ListView.builder (
+                  itemCount: state.notes.length,
+                  itemBuilder: (BuildContext context, int position) {
+                         var value =state.notes[position];
+                          return Card(
+                            elevation: 2,
+                            child: ListTile(
+                              title: Text(value["title"],style: const TextStyle(color: Colors.black),),
+                              subtitle: Text(value["description"]),
+                            ),
+                          );
+                  });
+
+          }
+
+
+          if (state is NotesLoadingState) {
+            return Center(child: CircularProgressIndicator(),);
+          }
+
+
+          return const Center(
+            child: Text("error",style: TextStyle(color: Colors.black),),
+          );
+
+        }
+    );
   }
   @override
   Widget build(BuildContext context) {
@@ -71,26 +132,24 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body:  data.length==0?Center(child:  Text("No Notes found"),):ListView.builder (
-          itemCount: data.length,
-          itemBuilder: (BuildContext context, int position) {
-                 var value =data[position];
-                  return Card(
-                    elevation: 2,
-                    child: ListTile(
-                      title: Text(value["title"],style: TextStyle(color: Colors.black),),
-                      subtitle: Text(value["description"]),
-                    ),
-                  );
-          }),
+      body: _blockBuilder(),
+      // body:  data.length==0?Center(child:  Text("No Notes found"),):ListView.builder (
+      //     itemCount: data.length,
+      //     itemBuilder: (BuildContext context, int position) {
+      //            var value =data[position];
+      //             return Card(
+      //               elevation: 2,
+      //               child: ListTile(
+      //                 title: Text(value["title"],style: TextStyle(color: Colors.black),),
+      //                 subtitle: Text(value["description"]),
+      //               ),
+      //             );
+      //     }),
 
     floatingActionButton: FloatingActionButton(
         onPressed:()async{
-         Map<String,dynamic> map=await Navigator.of(context).pushNamed("/add_note") as Map<String,dynamic>;
-         data.add(map);
-         setState(() {
+        Navigator.of(context).pushNamed("/add_note") as Map<String,dynamic>;
 
-         });
         },
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:task/sql_llte/db_services.dart';
+
+import 'cubit/note/note_author_cubit.dart';
 
 
 
@@ -55,10 +58,9 @@ class _AddNoteActivityState extends State<AddNoteActivity> {
                 "title":_name.text.toString(),
                 "description":_description.text.toString()
               };
-              Navigator.of(context).pop(map);
+              Navigator.of(context).pop();
               DBServices.insert(map);
-              var i =await DBServices.query();
-              print("ikjskjskjkjs "+i.toString());
+              BlocProvider.of<NoteCubit>(context).addNote(map);
 
 
             },

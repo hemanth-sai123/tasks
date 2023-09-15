@@ -18,7 +18,7 @@ class DBServices{
     print('inserted row id: $id');
   }
 
-  static Future<List<Map<String, dynamic>>> query() async {
+  static Future<List<Map<String, dynamic>>> query(DatabaseHelper dbHelper) async {
     final allRows = await dbHelper.queryAllRows();
     debugPrint('query all rows:');
     for (final row in allRows) {
